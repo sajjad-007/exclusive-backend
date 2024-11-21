@@ -2,3 +2,7 @@ sajjadhossian987
 LHoxFdljSMEOLfTH
 
 mongodb+srv://sajjadhossian987:LHoxFdljSMEOLfTH@cluster0.zl8mi.mongodb.net/
+
+node_modules/
+.env
+.DS_Store
