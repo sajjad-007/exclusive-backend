@@ -1,8 +1,10 @@
+#MongoDB project's Username, password and URL
 sajjadhossian987
 LHoxFdljSMEOLfTH
 
 mongodb+srv://sajjadhossian987:LHoxFdljSMEOLfTH@cluster0.zl8mi.mongodb.net/
 
+#The following file won't upload to my gitHub repository
 node_modules/
-.env
+#.env
 .DS_Store
