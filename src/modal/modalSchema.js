@@ -7,9 +7,8 @@ const userSchema = new Schema({
         required: true,
         trim: true,
     },
-    surName: {
+    lastName: {
         type: String,
-        required: true,
         trim: true,
     },
     email: {
@@ -25,15 +24,16 @@ const userSchema = new Schema({
     },
     phoneNumber: {
         type: Number,
+        required: true,
+    },
+    password: {
+        type: Number,
+        required: true,
+        trim: true
     },
     isVerified: {
         type: Boolean,
         default: false,
-    },
-    role: {
-        type: String,
-        default: user,
-        enum: {user,admin,merchent}
     },
     image: {
         type: String,
@@ -45,4 +45,4 @@ const userSchema = new Schema({
 
 const userModel = mongoose.model("user", userSchema)
 
-module.exports = {userModel}
+module.exports = { userModel }
