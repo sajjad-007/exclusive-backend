@@ -6,6 +6,7 @@ const userSchema = new Schema({
         type: String,
         required: true,
         trim: true,
+        unique: true,
     },
     lastName: {
         type: String,
@@ -22,14 +23,23 @@ const userSchema = new Schema({
         required: true,
         trim: true,
     },
+    permanentAddress: {
+        type: String,
+        trim: true,
+    },
     phoneNumber: {
-        type: Number,
+        type: String,
         required: true,
+        unique: true,
+    },
+    otp : {
+        type : Number,
     },
     password: {
-        type: Number,
+        type: String,
         required: true,
-        trim: true
+        unique: true,
+        trim: true,
     },
     isVerified: {
         type: Boolean,
