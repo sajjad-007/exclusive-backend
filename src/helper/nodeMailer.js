@@ -7,7 +7,7 @@ const transporter = nodemailer.createTransport({
     secure: true, // true for port 465, false for other ports
   auth: {
     user:  process.env.USER_EMAIL,
-    pass: process.env.PASSWORD,
+    pass: process.env.APP_PASSWORD,
   },
 });
 
@@ -15,14 +15,14 @@ const transporter = nodemailer.createTransport({
 const sendEmail = async (firstName,Otp,email) =>{
   // send mail with defined transport object
     const info = await transporter.sendMail({
-        from:  "sajjadhossain8123@gmail.com",//process.env.USER_EMAIL, // sender address
-        to: "sajjadhossian987@gmail.com", // list of receivers
+        from:  process.env.USER_EMAIL,//process.env.USER_EMAIL, // sender address
+        to: email, // list of receivers
         subject: "email verification", // Subject line
         html: mailTemplete(firstName,Otp), // html body
       });
       return info.messageId;
 }
 
-sendEmail().catch(console.error);
+// sendEmail().catch(console.error);
 
 module.exports = {sendEmail}
