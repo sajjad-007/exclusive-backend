@@ -35,6 +35,9 @@ const userSchema = new Schema({
     otp : {
         type : Number,
     },
+    expireOtp: {
+        type: Number,
+    },
     password: {
         type: String,
         required: true,

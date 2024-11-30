@@ -5,7 +5,8 @@ const {userModel} = require("../modal/modalSchema")
 const {sendEmail} = require("../helper/nodeMailer")
 const {otpgenetor} = require("../helper/optGenerate")
 const { passEncryption,checkPassword } = require("../helper/bcrypt")
-
+const {generateToken} = require("../helper/jwtToken")
+// const {generateToken} = require("../helper/jwtToken")
 const registration = async (req,res)=>{
     try {
         // user er given value (req.body) thek destructuring kora hocche <= ekhane user hocche Postman, Postman theke data post kora hocche
@@ -25,25 +26,6 @@ const registration = async (req,res)=>{
         //=========PASSWORD ENCRYPTION BCRYPT========= 
         // here password = user password
         const hassPass= await passEncryption(password)
-        //save user data to mongodb compass
-        const saveUserData = await userModel.create({
-            //item key (ueserModel)  and value(req.body value) same hole single name use kora jabe
-            firstName,
-            email,
-            address,
-            password: hassPass,
-            phoneNumber,
-            //======for optional value======
-            //judi amar lastName name kichu thake tahole item key (lastNmae)  er modde req.body (lastName) er value print hoye jabe  
-            ...(lastName && {lastName: lastName}),
-            ...(permanentAddress && {permanentAddress: permanentAddress}),
-
-            // usermodal er item key : destructring kora object er value
-            /** firstName : firstName,
-            email: email,
-            address: address,
-            password: password,*/
-        });
         
         // check if user is already exist in database
         const isAlreadyUserExist = userModel.find({
@@ -67,15 +49,41 @@ const registration = async (req,res)=>{
         const messageId = await sendEmail(firstName,Otp,email)
         
         if (messageId) {
+            //save user data to mongodb compass
+            const saveUserData = await userModel.create({
+                //item key (ueserModel)  and value(req.body value) same hole single name use kora jabe
+                firstName,
+                email,
+                address,
+                password: hassPass,
+                phoneNumber,
+                //======for optional value======
+                //judi amar lastName name kichu thake tahole item key (lastNmae)  er modde req.body (lastName) er value print hoye jabe  
+                ...(lastName && {lastName: lastName}),
+                ...(permanentAddress && {permanentAddress: permanentAddress}),
+
+                // usermodal er item key : destructring kora object er value
+                /** firstName : firstName,
+                email: email,
+                address: address,
+                password: password,*/
+            });
             //email send hole amar OTP ta database e save korbo find > email use kore database khujbe and email khuje pele Otp ta DB te store kore felbe (new : true > DB te save koro) 
-            const emailUpdated = await userModel.findOneAndUpdate(
-                {email :email},
-                {otp : Otp},
+            const userUpdated = await userModel.findOneAndUpdate(
+                {email :email},//find using email
+                {
+                    // update otp , expireOtp
+                    otp : Otp,
+                    // new Date().getTime() + min + sec + milisecond
+                    expireOtp : new Date().getTime() + 50 * 60 * 1000
+                },
+                //update successful
                 {new : true},
             )
             // je value value gula ami user ke dekhate cacchi na se gulo  select("")er modde (-) kore likhbo kintu eigulo Database e save hobe 
             .select("-lastName -isVerified -createdAt -address -updatedAt -otp")
-            return res.status(200).json(new succssResponse(200,"Registration done",false,emailUpdated))
+            
+            return res.status(200).json(new succssResponse(200,"Registration done",false,userUpdated))
         }
             
     } catch (Error) {
@@ -115,24 +123,76 @@ const login = async (req,res) => {
                 {phoneNumber : emailOrphoneNumber},
             ]
         })
+        // console.log(checkIsUserRegisterd);
         if (checkIsUserRegisterd) {
-
             const isPassCorrect = await checkPassword(password, checkIsUserRegisterd.password)
             if(!isPassCorrect){
                 return res
                     .status(400).
                     json(new errorResponse(400,`Password doesn't match`,`${Error}`,null))
             }
+            //access token / cookie
+            const userInfo = {_id: checkIsUserRegisterd._id,  email: checkIsUserRegisterd.email, firstName: checkIsUserRegisterd.firstName, phoneNumber: checkIsUserRegisterd.phoneNumber }
+            const token = await generateToken(userInfo)
+            // console.log(token);
+            return res.
+                status(200)
+                .cookie("token",token)
+                .json(
+                    new succssResponse(200,"LogIn successfull",false, {
+                        data: {
+                            token: `bearer: ${token}`,
+                            email: checkIsUserRegisterd.email,
+                            firstName: checkIsUserRegisterd.firstName,
+                        }
+                    })
+                ) 
         }
-        
-        
-        return res.
-            status(200)
-            .json(new succssResponse(200,"LogIn successfull",false,null))
+
+        // console.log(checkIsUserRegisterd.email)
+       
     } catch (error) {
         return res
         .status(500).
         json(new errorResponse(500,`LogIn Failed`,`${Error}`,null))
     }
 }
-module.exports = {registration, login}
+// OTP verify
+const otpVerify = async(req,res)=> {
+    try {
+        //user given value
+        const {email, otp} = req.body
+        if ( !email || !otp ) {
+            return res
+            .status(400)
+            .json(new errorResponse(400,`Invalid email or otp`,`${Error}`,null))
+        }
+        const matchOtp = await userModel.findOne({email: email})
+        // future time = matchOtp.expireOtp  , present time = new Date().getTime()
+        if (matchOtp.expireOtp >= new Date().getTime()  && matchOtp.otp == otp) {
+            const removeOtpCredential = await userModel.findOneAndDelete(
+                {email: email},
+                {
+                    otp: null,
+                    expireOtp: null
+                },
+                {new:  true}
+            )
+            if (removeOtpCredential) {
+                return res
+                .status(200)
+                .json(new succssResponse(200,`OTP verification successfull`,false,null))
+            }
+        }
+            return res.
+                status(200)
+                .json(new succssResponse(200,"OTP verified successfull",false, null)) 
+        
+        
+    } catch (error) {
+        return res
+        .status(400).
+        json(new errorResponse(400,`Invalid otp`,`${Error}`,null))
+    }
+}
+module.exports = {registration, login, otpVerify}
