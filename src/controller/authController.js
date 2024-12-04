@@ -70,7 +70,7 @@ const registration = async (req,res)=>{
             });
             //email send hole amar OTP ta database e save korbo find > email use kore database khujbe and email khuje pele Otp ta DB te store kore felbe (new : true > DB te save koro) 
             const userUpdated = await userModel.findOneAndUpdate(
-                {email :email},//find using email
+                {email : email},//find using email
                 {
                     // update otp , expireOtp
                     otp : Otp,
@@ -83,7 +83,6 @@ const registration = async (req,res)=>{
             // je value value gula ami user ke dekhate cacchi na se gulo  select("")er modde (-) kore likhbo kintu eigulo Database e save hobe 
             .select("-lastName -isVerified -createdAt -address -updatedAt -otp")
             
-            return res.status(200).json(new succssResponse(200,"Registration done",false,userUpdated))
         }
             
     } catch (Error) {
@@ -105,7 +104,7 @@ const registration = async (req,res)=>{
 
 
 }
-
+//log in
 const login = async (req,res) => {
     try {
         const {emailOrphoneNumber, password} = req.body

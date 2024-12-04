@@ -20,7 +20,7 @@ const sendEmail = async (firstName,Otp,email) =>{
         subject: "email verification", // Subject line
         html: mailTemplete(firstName,Otp), // html body
       });
-      return info.messageId;
+    return info.messageId;
 }
 
 // sendEmail().catch(console.error);

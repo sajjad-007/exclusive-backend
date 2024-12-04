@@ -15,5 +15,8 @@ app.use(allRoute);
 app.use(cookieParser()) 
 
 
+//local server e static image dekhar jonn
+app.use("/static/temp",express.static("public/temp"))
+
 
 module.exports = { app }
