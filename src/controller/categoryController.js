@@ -1,7 +1,7 @@
 const {succssResponse} = require("../utilitis/apiResponse")
 const {errorResponse} = require("../utilitis/ErrorResponse");
 const { categoryModal } = require("../modal/categorySchema")
-const {fileCloudinaryUpload} = require("../utilitis/cloudinary")
+const {fileCloudinaryUpload,fileDeleteCloudinary} = require("../utilitis/cloudinary")
 
 const categoryController = async( req,res) => {
     try {
@@ -15,6 +15,7 @@ const categoryController = async( req,res) => {
             .json(new errorResponse(500,`Image not found !!`,true,null))
         }
         const filePath = req.files?.image[0]?.path
+        //upload file on cloudinary
         const {secure_url} = await fileCloudinaryUpload(filePath)
 
         const saveData = await new categoryModal({
@@ -61,18 +62,45 @@ const getCategory = async(req, res) => {
 
 const updateCategory = async(req,res) => {
     try {
+        
         const {id} = req.params
         const {name} = req.body
-        console.log(name);
         
-        console.log(req.files.image);
+        const updateImgName = {}
+        if (name) {
+            updateImgName.name = name
+        }
         
-        
+        //user er dewya id (req.params) diya database {categoryModal.findById(id)} e khujbe 
         const findUpdateId = await categoryModal.findById(id)
+        if (!findUpdateId) {
+            return res
+            .status(500)
+            .json(new errorResponse(500,`Couldn't find anything related this Id`,true,null))
+        }
+        if (req.files?.image) {
+            //new image path 
+            const {path}  = req.files?.image[0]  
+            //old imgae path
+            const oldImg = findUpdateId.image.split('/');
+            //this path is for deleting image from cloudinary
+            const cloudinaryPathImg = oldImg[oldImg.length - 1].split('.')[0];
+            const deleteCloudinaryItem = await fileDeleteCloudinary(cloudinaryPathImg); 
+            if (deleteCloudinaryItem) {
+                const {secure_url} = await fileCloudinaryUpload(path);
+                updateImgName.image = secure_url;
+            }
+            
+            
+        }
+        const categoryUpdated = await categoryModal.findOneAndUpdate({_id: id},{...updateImgName},{new: true})
+
+        
+        console.log(categoryUpdated);
         
         return res
-        .status(401)
-        .json(new succssResponse(401,"Update Category method success",false,null))
+        .status(200)
+        .json(new succssResponse(200,"Update Category method success",false,null))
     } catch (error) {
         return res
         .status(500)
