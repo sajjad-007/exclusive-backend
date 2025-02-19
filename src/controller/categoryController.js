@@ -91,16 +91,12 @@ const updateCategory = async(req,res) => {
                 updateImgName.image = secure_url;
             }
             
-            
         }
         const categoryUpdated = await categoryModal.findOneAndUpdate({_id: id},{...updateImgName},{new: true})
-
-        
-        console.log(categoryUpdated);
         
         return res
         .status(200)
-        .json(new succssResponse(200,"Update Category method success",false,null))
+        .json(new succssResponse(200,"Update Category method success",false,categoryUpdated))
     } catch (error) {
         return res
         .status(500)
@@ -108,4 +104,46 @@ const updateCategory = async(req,res) => {
     }
 }
 
-module.exports = { categoryController,getCategory, updateCategory }
+//get a single category
+const getSingleCategory = async(req,res) => {
+    try {
+        const {id} = req.params
+
+        const findSingleCategory = await categoryModal.findById(id)
+        if (!findSingleCategory) {
+
+            return res
+            .status(500)
+            .json(new errorResponse(500,`Couldn't find this id`,error,null))
+        }
+        return res
+        .status(200)
+        .json(new succssResponse(200,"Single Category found successfully",false,findSingleCategory))
+    } catch (error) {
+        return res
+        .status(500)
+        .json(new errorResponse(500,`Error single category couldn't found`,error,null))
+    }
+}
+//delete a single category
+
+const deletCategory = async ( req,res) =>{
+    try {
+        const {id} = req.params
+        const delteCategory = await categoryModal.findByIdAndDelete(id)
+        if (!delteCategory) {
+            return res
+            .status(401)
+            .json(new errorResponse(401,`Couldn't delete this category`,true,null))
+        }
+        return res
+        .status(200)
+        .json(new succssResponse(200,"Category Deleted successfully",false,delteCategory))
+    } catch (error) {
+        return res
+        .status(500)
+        .json(new errorResponse(500,`Category delete Unsuccessfull`,error,null))
+    }
+}
+
+module.exports = { categoryController,getCategory, updateCategory,getSingleCategory,deletCategory }
