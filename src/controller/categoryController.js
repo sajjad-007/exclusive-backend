@@ -70,7 +70,7 @@ const updateCategory = async(req,res) => {
         if (name) {
             updateImgName.name = name
         }
-        
+        //**if we want to see form-data value(postman) then we must use multer 
         //user er dewya id (req.params) diya database {categoryModal.findById(id)} e khujbe 
         const findUpdateId = await categoryModal.findById(id)
         if (!findUpdateId) {
