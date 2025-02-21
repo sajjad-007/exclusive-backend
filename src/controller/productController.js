@@ -1,7 +1,7 @@
 const {succssResponse} = require("../utilitis/apiResponse")
 const {errorResponse} = require("../utilitis/ErrorResponse");
 const {productModel} = require("../modal/productSchema");
-const { fileCloudinaryUpload } = require("../utilitis/cloudinary");
+const { fileCloudinaryUpload, fileDeleteCloudinary } = require("../utilitis/cloudinary");
 
 const createProduct = async(req,res) =>{
     try {
@@ -119,5 +119,64 @@ const updateProductInfo = async(req,res)=>{
         .json(new errorResponse(500,`Error, from  product info update failed`,error,null))
     }
 }
+//update product Image
+const updateProductImage = async(req,res)=>{
+    try {
+        const {id} = req.params
+        const {imageId} = req.body
 
-module.exports = {createProduct,getAllProduct,getSingleProduct,updateProductInfo}
+        if(!imageId){
+            return res
+            .status(401)
+            .json(new errorResponse(401,`Couldn't find image id`,true,null))
+        }
+        if (!req.files) {
+            return res
+            .status(401)
+            .json(new errorResponse(401,`Couldn't find multer image`,true,null))
+            
+        }
+        
+        // delete old image from cloudinary
+        for(let img of imageId){
+            const oldImgSplit = img.split('/')
+            const oldImgUrl = oldImgSplit[oldImgSplit.length -1].split('.')[0]
+             await fileDeleteCloudinary(oldImgUrl)
+           
+        }
+        // upload new img to cloudinary
+        const cloudNewImgUp = []
+        for(let img of req.files.image){
+            const {secure_url} = await fileCloudinaryUpload(img.path)
+            cloudNewImgUp.push(secure_url)
+            
+        }
+        // console.log(cloudNewImgUp);
+        
+        //delete image from database
+        const findOldImgDb = await productModel.findById(id)
+        if(!findOldImgDb){
+            return res
+            .status(500)
+            .json(new errorResponse(500,`Couldn't find database`,true,null))
+        };
+        for(let oldImg of imageId) {
+            //pull() method to delete specefic url from database
+            const deleteOldImg = await  findOldImgDb.image.pull(oldImg)
+            
+        }
+        findOldImgDb.image = [...findOldImgDb.image , ...cloudNewImgUp]
+        
+        const check = await findOldImgDb.save()
+        
+        return res
+        .status(200)
+        .json(new succssResponse(200,"Successfully update product image",false,check))   
+    } catch (error) {
+        return res
+        .status(500)
+        .json(new errorResponse(500,`Error, from update product image failed`,error,null))
+    }
+}
+
+module.exports = {createProduct,getAllProduct,getSingleProduct,updateProductInfo,updateProductImage}
