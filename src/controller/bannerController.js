@@ -150,6 +150,11 @@ const deletBanner = async ( req,res) =>{
         const {id} = req.params
         
         const findBanner = await bannerModel.findById(id)
+        if (!findBanner) {
+            return res
+            .status(401)
+            .json(new errorResponse(401,`Couldn't delete this banner`,true,null))
+        }
         if(findBanner){
             const imgSplit = findBanner.image.split('/')
             const cloudPath = imgSplit[imgSplit.length -1 ].split('.')[0]
@@ -163,17 +168,11 @@ const deletBanner = async ( req,res) =>{
                 const deleteImgFromDB = await bannerModel.findByIdAndDelete(id)
             }
             
-            if (deleteImgFromDB) {
-                return res
-                .status(200)
-                .json(new succssResponse(200,"banner Deleted successfully",false,null))
-            }
+            
         }
-        if (!findBanner) {
-            return res
-            .status(401)
-            .json(new errorResponse(401,`Couldn't delete this banner`,true,null))
-        }
+        return res
+        .status(200)
+        .json(new succssResponse(200,"banner Deleted successfully",false,null))
     } catch (error) {
         return res
         .status(500)

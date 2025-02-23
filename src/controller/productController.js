@@ -27,6 +27,7 @@ const createProduct = async(req,res) =>{
             .json(new succssResponse(401,"Image not found product create",true,null))  
         }
         //emty array for store secure_url for database
+        //Upload new image to cloudinary
         const cloudinaryImgUrl = [];
         const uploaderCloudinary = async(imagePath)=>{
             const {secure_url} = await fileCloudinaryUpload(imagePath)
@@ -35,6 +36,7 @@ const createProduct = async(req,res) =>{
         for (let image of req.files?.image) {
            await uploaderCloudinary(image.path)  
         }
+        //create product database
         const createProductDb = await productModel.create({
             name: name,
             description: description,
@@ -123,6 +125,7 @@ const updateProductInfo = async(req,res)=>{
 const updateProductImage = async(req,res)=>{
     try {
         const {id} = req.params
+        //product's image url
         const {imageId} = req.body
 
         if(!imageId){
@@ -160,15 +163,22 @@ const updateProductImage = async(req,res)=>{
             .status(500)
             .json(new errorResponse(500,`Couldn't find database`,true,null))
         };
+
+        //(suppose we have 3 images in our database) suppose ei 3 ta image er modde 2 ta img delte hobe 1 ta img database e remaining thakbe
         for(let oldImg of imageId) {
             //pull() method to delete specefic url from database
             const deleteOldImg = await  findOldImgDb.image.pull(oldImg)
             
         }
+        //remaining thaka 1 ta img (findOldImgFromDb.image) ke spread kore database e save korte hobe
         findOldImgDb.image = [...findOldImgDb.image , ...cloudNewImgUp]
         
         const check = await findOldImgDb.save()
-        
+        if (!check) {
+            return res
+            .status(401)
+            .json(new errorResponse(401,`Couldn't save images in our database`,true,null))
+        }
         return res
         .status(200)
         .json(new succssResponse(200,"Successfully update product image",false,check))   
