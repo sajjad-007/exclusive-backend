@@ -1,17 +1,19 @@
 const {subCategoryModel} = require("../modal/subCategorySchema")
 const {succssResponse} = require("../utilitis/apiResponse")
 const {errorResponse} = require("../utilitis/ErrorResponse");
-
+const {categoryModal} = require('../modal/categorySchema')
 //create  sub category
 const subCategory = async(req,res) =>{
     try {
         const {name,category} = req.body
+        // const {subid} = req.params
         if (!name || !category) {
             return res
             .status(401)
             .json(new errorResponse(401,`Missing credential`,true,null))
         }       
         //check sub category is already exist!
+       
         const isAlreadyExist = await subCategoryModel.find({name: name})
         if (isAlreadyExist?.length) {
             return res
@@ -23,7 +25,10 @@ const subCategory = async(req,res) =>{
             name: name,
             category: category
         })
-
+        //search my category and save subCategoroy into my database
+        const findCategoryModel = await categoryModal.findById(category)
+        findCategoryModel.subCategory.push(saveSubCategory)
+        findCategoryModel.save()
         if (!saveSubCategory) {
             return res
             .status(401)
@@ -42,6 +47,7 @@ const subCategory = async(req,res) =>{
 //get all category
 const getAllSubCategory = async(req,res) =>{
     try {
+        //populate('category) means main category referance
         const findAllSubCategory = await subCategoryModel.find({}).populate('category')
         if (!findAllSubCategory) {
             return res
@@ -63,7 +69,7 @@ const getAllSubCategory = async(req,res) =>{
 const getSingleSubCategory = async(req,res) =>{
     try {
         const {subid} = req.params
-        const findSingleSubCategory = await subCategoryModel.findById(subid)
+        const findSingleSubCategory = await subCategoryModel.findById(subid).populate('category')
         if (!findSingleSubCategory) {
             return res
             .status(401)
@@ -82,7 +88,17 @@ const getSingleSubCategory = async(req,res) =>{
 const updateSingleCategory = async(req,res) =>{
     try {
         const {subid} = req.params
+        //update sub category
         const updateSubCategory = await subCategoryModel.findByIdAndUpdate({_id:subid},{...req.body},{new: true})
+        //update sub category from category
+        const searchSubCategory = await subCategoryModel.findById(subid)
+        const findCategory = await categoryModal.findById(searchSubCategory.category)
+        //delete old sub category from category 
+        findCategory.subCategory.pull(subid)
+        findCategory.subCategory.push(updateSubCategory)
+        findCategory.save()
+        
+        console.log("Category's sub category Update successfull")
         if (!updateSubCategory) {
             return res
             .status(401)
@@ -102,6 +118,12 @@ const updateSingleCategory = async(req,res) =>{
 const deleteSubCategory = async(req,res) =>{
     try {
         const {subid} = req.params
+        //first we have to delete subCategory from category section then we can delete this subCategory
+        const searchSubCategory = await subCategoryModel.findById(subid)
+        const findCategory = await categoryModal.findById(searchSubCategory.category)
+        findCategory.subCategory.pull(subid)
+        findCategory.save()
+        console.log("Category's sub category deleted")
         const deleteSubCategory = await subCategoryModel.findByIdAndDelete(subid)
 
         if (!deleteSubCategory) {
@@ -109,7 +131,7 @@ const deleteSubCategory = async(req,res) =>{
             .status(401)
             .json(new errorResponse(401,`Sub category delte Unsuccessfull`,true,null))
         }
-
+        cosole.log('hello world')
         return res
         .status(200)
         .json(new succssResponse(200,"Successfully deleted sub category ",false,deleteSubCategory))

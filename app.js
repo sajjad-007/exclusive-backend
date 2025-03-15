@@ -3,9 +3,9 @@ const app = express()
 const {route} = require("./src/route/index")
 const allRoute = route
 const cookieParser = require('cookie-parser')
+const cors = require('cors')
 
-
-
+app.use(cors())
 //Without this middleware, req.body will be undefined for JSON payloads.
 app.use(express.json());
 //my routes

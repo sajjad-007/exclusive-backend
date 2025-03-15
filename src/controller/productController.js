@@ -29,11 +29,13 @@ const createProduct = async(req,res) =>{
         //emty array for store secure_url for database
         //Upload new image to cloudinary
         const cloudinaryImgUrl = [];
-        const uploaderCloudinary = async(imagePath)=>{
+        const uploaderCloudinary = async(imagePath) => {
+            //below image.path
             const {secure_url} = await fileCloudinaryUpload(imagePath)
             cloudinaryImgUrl.push(secure_url)
         }
         for (let image of req.files?.image) {
+            //store this image.path into a function
            await uploaderCloudinary(image.path)  
         }
         //create product database
@@ -44,7 +46,8 @@ const createProduct = async(req,res) =>{
             stock: stock,
             color: color,
             rating: rating,
-            image: cloudinaryImgUrl,
+            image: cloudinaryImgUrl, 
+            // ( cloudinaryImgUrl ) this function contain an array of images. now push this to database
         })
         if (!createProductDb) {
             return res
@@ -143,9 +146,8 @@ const updateProductImage = async(req,res)=>{
         // delete old image from cloudinary
         for(let img of imageId){
             const oldImgSplit = img.split('/')
-            const oldImgUrl = oldImgSplit[oldImgSplit.length -1].split('.')[0]
+            const oldImgUrl = oldImgSplit[oldImgSplit.length - 1].split('.')[0]
              await fileDeleteCloudinary(oldImgUrl)
-           
         }
         // upload new img to cloudinary
         const cloudNewImgUp = []

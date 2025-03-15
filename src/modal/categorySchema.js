@@ -10,7 +10,13 @@ const categorySchema = new Schema( {
     image: {
         type: String,
         required: true,
-    }
+    },
+    subCategory: [
+        {
+            type: Schema.Types.ObjectId,
+            ref : 'subCategory',
+        }
+    ],
 }, 
     {timestamps: true},
 )

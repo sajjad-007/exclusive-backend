@@ -148,7 +148,6 @@ const updateBanner = async(req,res) =>{
 const deletBanner = async ( req,res) =>{
     try {
         const {id} = req.params
-        
         const findBanner = await bannerModel.findById(id)
         if (!findBanner) {
             return res
