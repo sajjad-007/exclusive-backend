@@ -125,7 +125,6 @@ const deleteSubCategory = async(req,res) =>{
         findCategory.save()
         console.log("Category's sub category deleted")
         const deleteSubCategory = await subCategoryModel.findByIdAndDelete(subid)
-
         if (!deleteSubCategory) {
             return res
             .status(401)

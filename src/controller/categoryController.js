@@ -41,8 +41,8 @@ const categoryController = async( req,res) => {
 // get all category
 const getCategory = async(req, res) => {
     try {
-
-        const findAllCategory = await categoryModal.find()
+        //populate means referance of my sub category. It shows how many sub category I have (and their every single datails) under one specefic category.
+        const findAllCategory = await categoryModal.find({}).populate('subCategory')
         if (findAllCategory?.length) {
             return res
             .status(200)
