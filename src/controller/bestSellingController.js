@@ -41,8 +41,7 @@ const createBestSelling = async (req, res) => {
 const getAllBestSelling = async (req, res) => {
   try {
     const findAllBestSellingDB = await bestSellingModel
-      .find({})
-      .populate("product");
+      .find({}).populate("product");
     if (!findAllBestSellingDB) {
       return res
         .status(200)

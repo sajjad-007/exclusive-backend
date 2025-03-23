@@ -3,12 +3,12 @@ const {errorResponse} = require("../utilitis/ErrorResponse");
 const {productModel} = require("../modal/productSchema");
 const { fileCloudinaryUpload, fileDeleteCloudinary } = require("../utilitis/cloudinary");
 
+//create product
 const createProduct = async(req,res) =>{
     try {
-        const {name,description,price,rating,stock,color,size} = req.body
-        
+        const {name,description,price,discountPercentage,rating,stock,color,size,review} = req.body
         //checking credential
-        if (!name || !description || !price || !stock || !color || !rating || !size) {
+        if (!name || !description || !price || !stock || !color || !rating || !size || !discountPercentage || !review) {
             return res
             .status(401)
             .json(new errorResponse(401,`Credential missing!`,true,null))
@@ -43,9 +43,11 @@ const createProduct = async(req,res) =>{
             name: name,
             description: description,
             price: price,
+            discountPercentage: discountPercentage,
             stock: stock,
             color: color,
             rating: rating,
+            review: review,
             image: cloudinaryImgUrl, 
             // ( cloudinaryImgUrl ) this function contain an array of images. now push this to database
         })
@@ -70,6 +72,7 @@ const getAllProduct = async(req,res)=>{
     try {
         //find all product
         const findAllProduct = await productModel.find({})
+        console.log(findAllProduct)
         if (!findAllProduct) {
             return res
             .status(401)

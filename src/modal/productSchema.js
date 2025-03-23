@@ -16,6 +16,10 @@ const productSchema = new Schema({
         type: Number,
         required: true,
     },
+    discountPercentage: {
+        type: Number,
+        required: true,
+    },
     stock: {
         type: String,
         required: true,
@@ -37,17 +41,21 @@ const productSchema = new Schema({
         default: "S",
         enum: ["XS","S","M","L","XL"]
     },
-    review: [
-        {
-            comment:{
-                type: String,
-                trim: true
-            },
-            rating: {
-                type: String,
-            }
-        }
-    ],
+    // review: [
+    //     {
+    //         comment:{
+    //             type: String,
+    //             trim: true
+    //         },
+    //         rating: {
+    //             type: String,
+    //         }
+    //     }
+    // ],
+    review: {
+        type: String,
+        required: true,
+    },
     image: [{
         type: String,
         required: true,
