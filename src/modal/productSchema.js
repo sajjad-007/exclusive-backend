@@ -60,7 +60,19 @@ const productSchema = new Schema({
         type: String,
         required: true,
         trim: true
-    }]
+    }],
+    category: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        trim: true,
+        ref: "category"
+    },
+    subCategory: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        trim: true,
+        ref: "subCategory"
+    },
 
     
 },

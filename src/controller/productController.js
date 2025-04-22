@@ -2,13 +2,16 @@ const {succssResponse} = require("../utilitis/apiResponse")
 const {errorResponse} = require("../utilitis/ErrorResponse");
 const {productModel} = require("../modal/productSchema");
 const { fileCloudinaryUpload, fileDeleteCloudinary } = require("../utilitis/cloudinary");
+const {categoryModal} = require("../modal/categorySchema")
+const {subCategoryModel} = require("../modal/subCategorySchema")
 
 //create product
 const createProduct = async(req,res) =>{
     try {
-        const {name,description,price,discountPercentage,rating,stock,color,size,review} = req.body
+        const {name,description,price,discountPercentage,rating,stock,color,size,review,subCategory,category} = req.body
+       
         //checking credential
-        if (!name || !description || !price || !stock || !color || !rating || !size || !discountPercentage || !review) {
+        if (!name || !description || !price || !stock || !color || !rating || !size || !discountPercentage || !review || !category || !subCategory) {
             return res
             .status(401)
             .json(new errorResponse(401,`Credential missing!`,true,null))
@@ -49,15 +52,28 @@ const createProduct = async(req,res) =>{
             rating: rating,
             review: review,
             image: cloudinaryImgUrl, 
+            category: category,
+            subCategory: subCategory,
             // ( cloudinaryImgUrl ) this function contain an array of images. now push this to database
         })
+        // console.log()
+        // const categoryDatabase = await 
         if (!createProductDb) {
             return res
             .status(401)
             .json(new errorResponse(401,`Product Database create failed`,true,null))
             
         }
-        
+        // product save into category controller
+        const categoryDatabase = await categoryModal.findById(category)
+        categoryDatabase.product.push(createProductDb._id)
+        await categoryDatabase.save()
+
+        // product save into category controller
+        const subCategoryDatabase = await subCategoryModel.findById(subCategory)
+        subCategoryDatabase.product.push(createProductDb._id)
+        await subCategoryDatabase.save()
+
         return res
         .status(200)
         .json(new succssResponse(200,"Product create successfull",false,createProductDb))        
@@ -72,7 +88,6 @@ const getAllProduct = async(req,res)=>{
     try {
         //find all product
         const findAllProduct = await productModel.find({})
-        console.log(findAllProduct)
         if (!findAllProduct) {
             return res
             .status(401)
@@ -193,5 +208,32 @@ const updateProductImage = async(req,res)=>{
         .json(new errorResponse(500,`Error, from update product image failed`,error,null))
     }
 }
+// delete product
+const deleteProduct = async(req,res) => {
+    try {
+        const {id} = req.params
+        const findDB = await productModel.findById(id)
+        if(!findDB){
+            return res
+            .status(401)
+            .json(new errorResponse(401,`Couldn't find anything`,true,null))
+        }
+        // Image delete from cloudinary
+        for(let img of findDB?.image){
+            let imgPath = img.split('/')
+            let imgDeletePath = imgPath[imgPath.length -1].split('.')[0]
+            await fileDeleteCloudinary(imgDeletePath)
+        }
+        // product database delete
+        const deleteProductDB = await productModel.findByIdAndDelete({_id: id})
+        return res
+        .status(200)
+        .json(new succssResponse(200,"Successfully deleted product",false,deleteProductDB)) 
+    } catch (error) {
+        return res
+        .status(500)
+        .json(new errorResponse(500,`Error,From delete product`,error,null))
+    }
+}
 
-module.exports = {createProduct,getAllProduct,getSingleProduct,updateProductInfo,updateProductImage}
+module.exports = {createProduct,getAllProduct,getSingleProduct,updateProductInfo,updateProductImage,deleteProduct}
