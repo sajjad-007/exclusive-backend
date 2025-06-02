@@ -20,7 +20,7 @@ const userSchema = new Schema({
     },
     address: {
         type: String,
-        required: true,
+        // required: true,
         trim: true,
     },
     permanentAddress: {

@@ -1,4 +1,4 @@
-const mailTemplete = (firstName,otp) =>{
+const mailTemplete = (firstName,otp,email) =>{
     return `
     <!DOCTYPE html>
 <html lang="en">
@@ -108,6 +108,7 @@ const mailTemplete = (firstName,otp) =>{
 
                 <p>If you did not request this, please ignore this email or contact support.</p>
                 <p>Thank you for choosing our service!</p>
+                <span>Verify your OTP</span> <a href="http://localhost:5173/verifyOtp/${email}" target="_blank" > Click here </a>
             </div>
 
             <!-- Footer -->
