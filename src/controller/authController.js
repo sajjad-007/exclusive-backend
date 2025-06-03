@@ -67,7 +67,7 @@ const registration = async (req, res) => {
 
     // make a otp generator
     const Otp = otpgenetor();
-    // send email verification to user
+    // send email verification to user (send otp)
     const messageId = await sendEmail(firstName, Otp, email);
 
     if (messageId) {
@@ -100,26 +100,29 @@ const registration = async (req, res) => {
             // update otp , expireOtp
             otp: Otp,
             // new Date().getTime() + min + sec + milisecond
-            expireOtp: new Date().getTime() + 50 * 60 * 1000,
+            expireOtp: new Date().getTime() + 10 * 60 * 1000,
           },
           //update successful
           { new: true }
         )
         // je value value gula ami user ke dekhate cacchi na se gulo  select("")er modde (-) kore likhbo kintu eigulo Database e save hobe
         .select("-lastName -isVerified -createdAt -address -updatedAt ");
-      if(userUpdated){
+      if (userUpdated) {
         return res
           .status(200)
           .json(
-            new succssResponse(200, "Registration successfull", false, )
+            new succssResponse(
+              200,
+              "Registration successfull",
+              false,
+              userUpdated
+            )
           );
       }
-    }else{
+    } else {
       return res
-      .status(401)
-      .json(
-        new errorResponse(500, `registration unsuccessful`, true, null)
-      );
+        .status(401)
+        .json(new errorResponse(500, `Registration  unsuccessful`, true, null));
     }
   } catch (Error) {
     //==========New Method
@@ -211,12 +214,15 @@ const otpVerify = async (req, res) => {
     if (!email || !otp) {
       return res
         .status(401)
-        .json(new errorResponse(401, `Invalid email or otp`, true, null));
+        .json(new errorResponse(401, `Credential Missing!`, true, null));
     }
     const matchOtp = await userModel.findOne({ email: email });
-    // future time = matchOtp.expireOtp  , present time = new Date().getTime()
-    if (matchOtp.expireOtp >= new Date().getTime() && matchOtp.otp == otp) {
-      const removeOtpCredential = await userModel.findOneAndDelete(
+
+    if (
+      matchOtp.expireOtp >= new Date().getTime() &&
+      matchOtp.otp === parseInt(otp)
+    ) {
+      const removeOtpCredential = await userModel.findOneAndUpdate(
         { email: email },
         {
           otp: null,
@@ -236,16 +242,77 @@ const otpVerify = async (req, res) => {
             )
           );
       }
+    } else {
+      return res
+        .status(401)
+        .json(
+          new succssResponse(200, "OTP invalid or expired", true, null)
+        );
     }
-    return res
-      .status(200)
-      .json(
-        new succssResponse(200, "OTP verified successfull", false, matchOtp)
-      );
   } catch (error) {
     return res
-      .status(400)
-      .json(new errorResponse(400, `Invalid otp`, `${Error}`, null));
+      .status(500)
+      .json(new errorResponse(500, `Error from otpVerify `, `${error}`, null));
   }
 };
-module.exports = { registration, login, otpVerify };
+const resendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if(!email){
+       return res
+        .status(401)
+        .json(new errorResponse(401, `Email not found`, true, null));
+    }
+    const findUser = await userModel.findOne({ email: email });
+    if (!findUser) {
+      return res
+        .status(404)
+        .json(new errorResponse(404, `User not found`, true, null));
+    }
+    // make a otp generator
+    const Otp = otpgenetor();
+    // send email verification to user
+    const messageId = await sendEmail(
+      `${findUser.firstName}, Here is your resent otp `,
+      Otp,
+      email
+    );
+
+    if (messageId) {
+      const userUpdated = await userModel
+        .findOneAndUpdate(
+          { email: email }, //find using email
+          {
+            // update otp , expireOtp
+            otp: Otp,
+            // new Date().getTime() + min + sec + milisecond
+            expireOtp: new Date().getTime() + 10 * 60 * 1000,
+          },
+          //update successful
+          { new: true }
+        )
+        .select("-lastName -isVerified -createdAt -address -updatedAt ");
+      if (userUpdated) {
+        return res
+          .status(200)
+          .json(
+            new succssResponse(
+              200,
+              `We resent your OTP check email`,
+              false,
+              userUpdated,
+            )
+          );
+      }
+    } else {
+      return res
+        .status(401)
+        .json(new errorResponse(401, `Resent otp  unsuccessful`, true, null));
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json(new errorResponse(500, `Error from otpVerify `, `${error}`, null));
+  }
+};
+module.exports = { registration, login, otpVerify, resendOtp };

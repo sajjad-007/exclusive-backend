@@ -100,7 +100,7 @@ const mailTemplete = (firstName,otp,email) =>{
             <!-- Body -->
             <div class="email-body">
                 <p>Hello <strong>${firstName}</strong>,</p>
-                <p>Welcome to our platform! To complete your registration, please use the following One-Time Password (OTP):</p>
+                <p>Welcome to our platform! To complete your registration, please use the following One-Time Password (OTP), this OTP is valid for 10 miniutes:</p>
 
                 <div class="otp-box">
                     <span class="otp-code">${otp}</span>
@@ -108,7 +108,7 @@ const mailTemplete = (firstName,otp,email) =>{
 
                 <p>If you did not request this, please ignore this email or contact support.</p>
                 <p>Thank you for choosing our service!</p>
-                <span>Verify your OTP</span> <a href="http://localhost:5173/verifyOtp/${email}" target="_blank" > Click here </a>
+                <span>To verify your OTP</span> <button> <a href="http://localhost:5173/verifyOtp/${email}" target="_blank" > Click Here </a> </button>
             </div>
 
             <!-- Footer -->
