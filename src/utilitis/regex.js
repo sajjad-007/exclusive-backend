@@ -4,7 +4,7 @@ const emailChecker = (email)=>{
     return emailRegex.test(email.toLowerCase());
 }
 const passwordChecker = (password)=>{
-    //Minimum eight characters, at least one letter and one number:
+    //Minimum 5 characters, at least one letter and one number:
     const passwordRegex = 
     /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
     return passwordRegex.test(password);

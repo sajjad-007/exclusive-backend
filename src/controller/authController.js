@@ -11,6 +11,13 @@ const { otpgenetor } = require("../helper/optGenerate");
 const { passEncryption, checkPassword } = require("../helper/bcrypt");
 const { generateToken } = require("../helper/jwtToken");
 // const {generateToken} = require("../helper/jwtToken")
+
+// Cookie options
+const options = {
+  httpOnly: true, // Prevent client-side JavaScript access
+  secure: false, // Set to true if using HTTPS
+};
+
 const registration = async (req, res) => {
   try {
     // user er given value (req.body) thek destructuring kora hocche <= ekhane user hocche Postman, Postman theke data post kora hocche
@@ -22,6 +29,7 @@ const registration = async (req, res) => {
         .json(new errorResponse(401, `User Credential error`, true, null));
     }
     //validation with regex
+    //email, number, password format checker
     if (
       !emailChecker(email) ||
       !passwordChecker(password) ||
@@ -39,7 +47,7 @@ const registration = async (req, res) => {
         );
     }
     //=========PASSWORD ENCRYPTION BCRYPT=========
-    // here password = user password
+    // here, password = user password
     const hassPass = await passEncryption(password);
 
     // check if user is already exist in database
@@ -163,7 +171,8 @@ const login = async (req, res) => {
         { phoneNumber: emailOrphoneNumber },
       ],
     });
-    // console.log(checkIsUserRegisterd);
+
+    //check user given password is correct or not
     if (checkIsUserRegisterd) {
       const isPassCorrect = await checkPassword(
         password,
@@ -172,9 +181,7 @@ const login = async (req, res) => {
       if (!isPassCorrect) {
         return res
           .status(400)
-          .json(
-            new errorResponse(400, `Password doesn't match`, `${Error}`, null)
-          );
+          .json(new errorResponse(400, `Password doesn't match`, ture, null));
       }
       //access token / cookie
       const userInfo = {
@@ -187,7 +194,7 @@ const login = async (req, res) => {
       // console.log(token);
       return res
         .status(200)
-        .cookie("token", token)
+        .cookie("token", token, options)
         .json(
           new succssResponse(200, "LogIn successfull", false, {
             data: {
@@ -197,13 +204,17 @@ const login = async (req, res) => {
             },
           })
         );
+    } else {
+      return res
+        .status(401)
+        .json(new errorResponse(401, `LogIn Failed`, true, null));
     }
 
     // console.log(checkIsUserRegisterd.email)
   } catch (error) {
     return res
       .status(500)
-      .json(new errorResponse(500, `LogIn Failed`, `${Error}`, null));
+      .json(new errorResponse(500, `Error from login`, error, null));
   }
 };
 // OTP verify
@@ -245,9 +256,7 @@ const otpVerify = async (req, res) => {
     } else {
       return res
         .status(401)
-        .json(
-          new succssResponse(200, "OTP invalid or expired", true, null)
-        );
+        .json(new succssResponse(200, "OTP invalid or expired", true, null));
     }
   } catch (error) {
     return res
@@ -255,11 +264,12 @@ const otpVerify = async (req, res) => {
       .json(new errorResponse(500, `Error from otpVerify `, `${error}`, null));
   }
 };
+//resend otp
 const resendOtp = async (req, res) => {
   try {
     const { email } = req.body;
-    if(!email){
-       return res
+    if (!email) {
+      return res
         .status(401)
         .json(new errorResponse(401, `Email not found`, true, null));
     }
@@ -300,7 +310,7 @@ const resendOtp = async (req, res) => {
               200,
               `We resent your OTP check email`,
               false,
-              userUpdated,
+              userUpdated
             )
           );
       }
@@ -315,4 +325,73 @@ const resendOtp = async (req, res) => {
       .json(new errorResponse(500, `Error from otpVerify `, `${error}`, null));
   }
 };
-module.exports = { registration, login, otpVerify, resendOtp };
+// forget password
+const forgetPassword = async (req, res) => {
+  try {
+    const { email, newPassword, confirmPassword, oldPass } = req.body;
+    //Credential ckecking
+    if (!email || !newPassword || !confirmPassword || !oldPass) {
+      return res
+        .status(401)
+        .json(new errorResponse(401, `Credential Missing!`, true, null));
+    }
+    //Password format checker
+    if (!passwordChecker(newPassword)) {
+      return res
+        .status(401)
+        .json(
+          new errorResponse(401, `Password format Don't match`, true, null)
+        );
+    }
+    const findUser = await userModel.findOne({ email: email });
+    //check user given password is correct or not compare to database password
+    const isPasswordCorrect = await checkPassword(oldPass, findUser.password);
+    if (isPasswordCorrect) {
+      if (newPassword === confirmPassword) {
+        const newhassPass = await passEncryption(confirmPassword);
+        const savePassDb = await userModel.findOneAndUpdate(
+          { email: email },
+          { password: newhassPass },
+          { new: true }
+        );
+        if (!savePassDb) {
+          return res
+            .status(401)
+            .json(new errorResponse(401, `Database don't save `, true, null));
+        }
+        return res
+          .status(200)
+          .json(
+            new succssResponse(200, `Password change successful`, false, null)
+          );
+      } else {
+        return res
+          .status(401)
+          .json(
+            new errorResponse(
+              401,
+              `Password Don't match or something wrong`,
+              true,
+              null
+            )
+          );
+      }
+    } else {
+      return res
+        .status(401)
+        .json(new errorResponse(401, `Password Don't match`, true, null));
+    }
+    return res
+      .status(200)
+      .json(
+        new succssResponse(200, `Password Change successfull`, false, null)
+      );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        new errorResponse(500, `Error from forget password `, `${error}`, null)
+      );
+  }
+};
+module.exports = { registration, login, otpVerify, resendOtp, forgetPassword };

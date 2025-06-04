@@ -5,7 +5,10 @@ const allRoute = route
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 
-app.use(cors())
+app.use(cors({
+    origin:["http://localhost:5173"],
+    credentials:true,
+}))
 //Without this middleware, req.body will be undefined for JSON payloads.
 app.use(express.json());
 //my routes
