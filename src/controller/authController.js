@@ -154,6 +154,7 @@ const registration = async (req, res) => {
 //log in
 const login = async (req, res) => {
   try {
+
     const { emailOrphoneNumber, password } = req.body;
     if (!emailOrphoneNumber || !password) {
       return res
@@ -328,6 +329,75 @@ const resendOtp = async (req, res) => {
 // forget password
 const forgetPassword = async (req, res) => {
   try {
+    const { email, newPassword, confirmPassword } = req.body;
+    //Credential ckecking
+    if (!email || !newPassword || !confirmPassword) {
+      return res
+        .status(401)
+        .json(new errorResponse(401, `Credential Missing!`, true, null));
+    }
+    //Password format checker
+    if (!passwordChecker(newPassword)) {
+      return res
+        .status(401)
+        .json(
+          new errorResponse(401, `Password format Don't match`, true, null)
+        );
+    }
+    const findUser = await userModel.findOne({ email: email });
+    //check user given password is correct or not compare to database password
+
+    if (findUser) {
+      if (newPassword === confirmPassword) {
+        const newhassPass = await passEncryption(confirmPassword);
+        const savePassDb = await userModel.findOneAndUpdate(
+          { email: email },
+          { password: newhassPass },
+          { new: true }
+        );
+        if (!savePassDb) {
+          return res
+            .status(401)
+            .json(new errorResponse(401, `Database don't save `, true, null));
+        }
+        return res
+          .status(200)
+          .json(
+            new succssResponse(200, `Password change successful`, false, null)
+          );
+      } else {
+        return res
+          .status(401)
+          .json(
+            new errorResponse(
+              401,
+              `Password Don't match or something wrong`,
+              true,
+              null
+            )
+          );
+      }
+    } else {
+      return res
+        .status(401)
+        .json(new errorResponse(401, `This eamil is not Exist`, true, null));
+    }
+    return res
+      .status(200)
+      .json(
+        new succssResponse(200, `Password Change successfull`, false, null)
+      );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        new errorResponse(500, `Error from forget password `, `${error}`, null)
+      );
+  }
+};
+// forget password
+const changePassword = async (req, res) => {
+  try {
     const { email, newPassword, confirmPassword, oldPass } = req.body;
     //Credential ckecking
     if (!email || !newPassword || !confirmPassword || !oldPass) {
@@ -394,4 +464,11 @@ const forgetPassword = async (req, res) => {
       );
   }
 };
-module.exports = { registration, login, otpVerify, resendOtp, forgetPassword };
+module.exports = {
+  registration,
+  login,
+  otpVerify,
+  resendOtp,
+  forgetPassword,
+  changePassword,
+};

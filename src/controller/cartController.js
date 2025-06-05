@@ -4,7 +4,7 @@ const { cartModel } = require("../modal/cartShema");
 
 const createCartController = (req, res) => {
   try {
-    return res.status(200).json(new succssResponse(200,`create successful`,false,null))
+    return res.status(200).json(new succssResponse(200,`Cart  successful`,false,null))
   } catch (error) {
     return res
       .status(500)
