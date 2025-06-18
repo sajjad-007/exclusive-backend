@@ -16,4 +16,4 @@ _.route("/resendotp").post(resendOtp);
 _.route("/forgetPassword").post(forgetPassword);
 _.route("/changepassword").post(changePassword);
 
-module.exports = _; //default export
+module.exports = _; //default export  

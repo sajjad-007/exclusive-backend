@@ -1,7 +1,7 @@
 const express = require('express')
 const _ = express.Router()
-const { createCartController } = require('../controller/cartController')
+const { addtoCart } = require('../controller/addTocartController.js')
 const { authGuard } = require('../middleware/authguard.Middleware')
 
-_.route("/cart").post(authGuard,createCartController)
+_.route("/addtocart").post(authGuard,addtoCart)
 module.exports = _

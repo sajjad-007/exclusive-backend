@@ -154,7 +154,6 @@ const registration = async (req, res) => {
 //log in
 const login = async (req, res) => {
   try {
-
     const { emailOrphoneNumber, password } = req.body;
     if (!emailOrphoneNumber || !password) {
       return res
@@ -199,7 +198,7 @@ const login = async (req, res) => {
         .json(
           new succssResponse(200, "LogIn successfull", false, {
             data: {
-              token: `bearer: ${token}`,
+              token: `bearer ${token}`,
               email: checkIsUserRegisterd.email,
               firstName: checkIsUserRegisterd.firstName,
             },
@@ -237,8 +236,12 @@ const otpVerify = async (req, res) => {
       const removeOtpCredential = await userModel.findOneAndUpdate(
         { email: email },
         {
-          otp: null,
-          expireOtp: null,
+          // Use $unset to fully remove the field.
+          //  Do NOT set otp: 0 or null — both can still violate a unique index.
+          $unset: {
+            otp: "",
+            expireOtp: "",
+          },
         },
         { new: true }
       );
@@ -257,7 +260,7 @@ const otpVerify = async (req, res) => {
     } else {
       return res
         .status(401)
-        .json(new succssResponse(200, "OTP invalid or expired", true, null));
+        .json(new succssResponse(401, "OTP invalid or expired", true, null));
     }
   } catch (error) {
     return res

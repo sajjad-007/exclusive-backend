@@ -10,7 +10,7 @@ const flashRoute = require("./flash.apiRoute")
 const bestSellingRoute = require("./bestSelling.apiRoute")
 const browseByCategory = require("./browseByCate.apiRoute")
 const exploreProduct = require("./exploreProduct.apiRoute")
-const cartRoute = require("./cart.apiRoute")
+const cartRoute = require("./addtocart.apiRoute")
 //.use() হল Express.js-এর একটি middleware ফাংশন,যা অন্য কোনো router যুক্ত করতে ব্যবহৃত হয়
 route.use("/api/v1",authRoute);
 route.use("/api/v1",categoryRoute);

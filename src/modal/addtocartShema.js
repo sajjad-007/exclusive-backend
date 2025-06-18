@@ -15,14 +15,13 @@ const cartSchema = new Schema(
       required: true,
       ref: "product",
     },
-    totalPrice: {
-      type: Number,
-      required: true,
-    },
     quantity: {
       type: Number,
       required: true,
       default: 1,
+    },
+    totalPrice: {
+      type: Number,
     },
   },
   { timestamps: true }
