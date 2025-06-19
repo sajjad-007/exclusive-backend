@@ -3,13 +3,13 @@ const { Schema } = mongoose;
 
 const cartSchema = new Schema(
   {
-    cartUser: {
+    user: {
       type: Schema.Types.ObjectId,
       required: true,
       trim: true,
       ref: "user",
     },
-    cartProduct: {
+    product: {
       type: Schema.Types.ObjectId,
       trim: true,
       required: true,

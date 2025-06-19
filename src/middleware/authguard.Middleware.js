@@ -3,8 +3,8 @@ const { errorResponse } = require("../utilitis/ErrorResponse");
 
 const authGuard = (req, res, next) => {
   try {
+    // req.headers.cookie = website
     if (req.headers.cookie) {
-      // req.headers.cookie = website
       const token = req.headers.cookie.replace("token=", "").trim();
       // invalid token - synchronous (detect invalid tokens)
       const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
