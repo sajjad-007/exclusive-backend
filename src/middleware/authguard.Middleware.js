@@ -15,6 +15,7 @@ const authGuard = (req, res, next) => {
       }
       // req.user =decoded (new object was build and that stored decoded's value)
       req.user = decoded;
+
       next();
     } else if (req.headers.authorization) {
       //req.headers.authorization = anroid

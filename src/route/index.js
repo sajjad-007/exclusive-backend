@@ -11,6 +11,7 @@ const bestSellingRoute = require("./bestSelling.apiRoute")
 const browseByCategory = require("./browseByCate.apiRoute")
 const exploreProduct = require("./exploreProduct.apiRoute")
 const cartRoute = require("./addtocart.apiRoute")
+const orderRoute = require("./order.apiRoute")
 //.use() হল Express.js-এর একটি middleware ফাংশন,যা অন্য কোনো router যুক্ত করতে ব্যবহৃত হয়
 route.use("/api/v1",authRoute);
 route.use("/api/v1",categoryRoute);
@@ -22,6 +23,7 @@ route.use("/api/v1",bestSellingRoute)
 route.use("/api/v1",browseByCategory)
 route.use("/api/v1",exploreProduct)
 route.use("/api/v1",cartRoute)
+route.use("/api/v1",orderRoute)
 route.use("*",(req,res)=>{
     return res.status(404)
         .json(new errorResponse(404,"Invalid Routes!",null,true))

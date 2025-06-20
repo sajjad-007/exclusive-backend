@@ -92,7 +92,6 @@ const findSingleddtocart = async (req, res) => {
   try {
     // find single products from data base
     const { id } = req.params;
-
     const findSingleProduct = await cartModel
       .find({ _id: id })
       .populate({ path: "user", select: "-password -createdAt -updatedAt" })
@@ -102,6 +101,7 @@ const findSingleddtocart = async (req, res) => {
         .status(401)
         .json(new errorResponse(401, `Couldn't find anything`, true, null));
     }
+    // console.log(findSingleProduct)
     return res
       .status(200)
       .json(
@@ -109,7 +109,7 @@ const findSingleddtocart = async (req, res) => {
           200,
           `successfully found all addtocart product`,
           false,
-          findSingleProduct
+          findSingleProduct,
         )
       );
   } catch (error) {

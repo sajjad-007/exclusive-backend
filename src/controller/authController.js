@@ -191,7 +191,7 @@ const login = async (req, res) => {
         phoneNumber: checkIsUserRegisterd.phoneNumber,
       };
       const token = await generateToken(userInfo);
-      // console.log(token);
+      // console.log(token)
       return res
         .status(200)
         .cookie("token", token, options)
