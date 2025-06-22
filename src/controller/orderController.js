@@ -56,10 +56,10 @@ const placeOrder = async (req, res) => {
           .json(new succssResponse(200, `You order is placed `, false, null));
       }
       return res
-      .status(200)
-      .json(
-        new succssResponse(200, `You order is placed `, false, saveOrderInfo)
-      );
+        .status(200)
+        .json(
+          new succssResponse(200, `You order is placed `, false, saveOrderInfo)
+        );
     } else {
       return res
         .status(401)

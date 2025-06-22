@@ -9,7 +9,7 @@ const addtoCart = async (req, res) => {
     if (!product) {
       return res
         .status(401)
-        .json(new errorResponse(401, `Product missing`, true, null));
+        .json(new errorResponse(401, `Credential missing`, true, null));
     }
     //is product already exist
     const isAlreadyExist = await cartModel.find({ product: product });
@@ -39,7 +39,7 @@ const addtoCart = async (req, res) => {
       .json(
         new succssResponse(
           200,
-          `AddtoCart Database create  successful`,
+          `Product added to cart`,
           false,
           creatAddtocarteDB
         )
@@ -71,16 +71,38 @@ const findallAddtocart = async (req, res) => {
         .status(401)
         .json(new errorResponse(401, `Couldn't find anything`, true, null));
     }
-    return res
-      .status(200)
-      .json(
-        new succssResponse(
-          200,
-          `successfully found all addtocart product`,
-          false,
-          findAllProduct
-        )
-      );
+    //totalprice,totalQuantity
+    const productPriceQuantity = findAllProduct.reduce(
+      (initialItem, item) => {
+        const { quantity, product } = item;
+        initialItem.totalPrice += product.price;
+        initialItem.totalQuantity += quantity;
+        return initialItem;
+      },
+      {
+        totalPrice: 0,
+        totalQuantity: 0,
+      }
+    );
+    if (!productPriceQuantity) {
+      return res
+        .status(401)
+        .json(
+          new errorResponse(
+            401,
+            `total Price and quantity couldn't calculated`,
+            true,
+            null
+          )
+        );
+    }
+
+    return res.status(200).json(
+      new succssResponse(200, `successfully found all product`, false, {
+        findAllProduct,
+        productPriceQuantity,
+      })
+    );
   } catch (error) {
     return res
       .status(500)
@@ -109,7 +131,7 @@ const findSingleddtocart = async (req, res) => {
           200,
           `successfully found all addtocart product`,
           false,
-          findSingleProduct,
+          findSingleProduct
         )
       );
   } catch (error) {
