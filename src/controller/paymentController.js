@@ -3,9 +3,7 @@ const { errorResponse } = require("../utilitis/ErrorResponse");
 
 exports.paymentSuccess = async (req, res) => {
   try {
-    return res
-      .status(200)
-      .json(new succssResponse(200, `payment successfull `, false, null));
+    res.redirect("http://localhost:5173/success")
   } catch (error) {
     return res
       .status(401)
@@ -21,16 +19,7 @@ exports.paymentSuccess = async (req, res) => {
 };
 exports.paymentFailed = async (req, res) => {
   try {
-    return res
-      .status(200)
-      .json(
-        new succssResponse(
-          200,
-          `payment failded controller success `,
-          false,
-          null
-        )
-      );
+    res.redirect("http://localhost:5173/fail")
   } catch (error) {
     return res
       .status(401)

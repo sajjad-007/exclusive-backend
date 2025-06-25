@@ -58,8 +58,15 @@ const placeOrder = async (req, res) => {
       });
       if (!saveOrderInfo) {
         return res
-          .status(200)
-          .json(new succssResponse(200, `You order is placed `, false, null));
+          .status(401)
+          .json(
+            new succssResponse(
+              401,
+              `Your order didn't save into database`,
+              true,
+              null
+            )
+          );
       }
       return res
         .status(200)
@@ -103,9 +110,10 @@ const placeOrder = async (req, res) => {
       };
       const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
       const apiResponses = await sslcz.init(data);
+      // Redirect the user to payment gateway
       let GatewayPageURL = apiResponses.GatewayPageURL;
       //save  order information ( online payment method ) into database
-      const saveOrderInfo = await orderModel.create({
+      const onlineOrderInfo = await  orderModel.create({
         user: req.user._id,
         cartItem: orderInfo.cart,
         customerInfo: customerInfo,
@@ -113,10 +121,26 @@ const placeOrder = async (req, res) => {
         subTotal: orderInfo.totalPrice,
         totalQuantity: orderInfo.totalQuantity,
       });
-      saveOrderInfo.paymentInfo.tranId = tranId;
-      await saveOrderInfo.save();
+
+      onlineOrderInfo.paymentInfo.tranId = tranId;
+      await onlineOrderInfo.save();
+
+      if (!onlineOrderInfo) {
+        return res
+          .status(401)
+          .json(
+            new errorResponse(
+              401,
+              `online order info couldn't save in db`,
+              true,
+              saveOrderInfo
+            )
+          );
+      }
+
       console.log("Redirecting to: ", GatewayPageURL);
       return res.status(200).json({ url: GatewayPageURL });
+
     } else {
       return res
         .status(401)
