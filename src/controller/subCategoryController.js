@@ -158,7 +158,7 @@ const updateSingleCategory = async (req, res) => {
       .json(
         new succssResponse(
           200,
-          "Successfully Updated Single Sub Category ",
+          "Successfully Updated Sub-Category ",
           false,
           updateSubCategory
         )
@@ -167,7 +167,12 @@ const updateSingleCategory = async (req, res) => {
     return res
       .status(500)
       .json(
-        new errorResponse(500, `Update single sub category failed`, true, null)
+        new errorResponse(
+          500,
+          `Error from Update single subcategory `,
+          error,
+          null
+        )
       );
   }
 };
@@ -182,16 +187,26 @@ const deleteSubCategory = async (req, res) => {
     );
     findCategory.subCategory.pull(subid);
     findCategory.save();
-    console.log("Category's sub category deleted");
+    if (!findCategory) {
+      return res
+        .status(401)
+        .json(
+          new errorResponse(401, `Category's sub category couldn't deleted`, true, null)
+        );
+    }
     const deleteSubCategory = await subCategoryModel.findByIdAndDelete(subid);
     if (!deleteSubCategory) {
       return res
         .status(401)
         .json(
-          new errorResponse(401, `Sub category delte Unsuccessfull`, true, null)
+          new errorResponse(
+            401,
+            `Subcategory delete Unsuccessfull`,
+            true,
+            null
+          )
         );
     }
-    cosole.log("hello world");
     return res
       .status(200)
       .json(
@@ -206,7 +221,7 @@ const deleteSubCategory = async (req, res) => {
     return res
       .status(500)
       .json(
-        new errorResponse(500, `Error from sub category delete`, true, null)
+        new errorResponse(500, `Error from sub category delete`, error, null)
       );
   }
 };
