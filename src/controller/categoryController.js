@@ -139,7 +139,7 @@ const getSingleCategory = async (req, res) => {
 
     const findSingleCategory = await categoryModal
       .findById(id)
-      .populate("product");
+      .populate(["subCategory"]);
     if (!findSingleCategory) {
       return res
         .status(500)
