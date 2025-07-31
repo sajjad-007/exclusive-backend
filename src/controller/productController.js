@@ -127,7 +127,9 @@ const createProduct = async (req, res) => {
 const getAllProduct = async (req, res) => {
   try {
     //find all product
-    const findAllProduct = await productModel.find({});
+    const findAllProduct = await productModel
+      .find({})
+      .populate(["category", 'subCategory']);
     if (!findAllProduct) {
       return res
         .status(401)
