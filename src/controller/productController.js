@@ -1,12 +1,12 @@
-const { succssResponse } = require("../utilitis/apiResponse");
-const { errorResponse } = require("../utilitis/ErrorResponse");
-const { productModel } = require("../modal/productSchema");
+const { succssResponse } = require('../utilitis/apiResponse');
+const { errorResponse } = require('../utilitis/ErrorResponse');
+const { productModel } = require('../modal/productSchema');
 const {
   fileCloudinaryUpload,
   fileDeleteCloudinary,
-} = require("../utilitis/cloudinary");
-const { categoryModal } = require("../modal/categorySchema");
-const { subCategoryModel } = require("../modal/subCategorySchema");
+} = require('../utilitis/cloudinary');
+const { categoryModal } = require('../modal/categorySchema');
+const { subCategoryModel } = require('../modal/subCategorySchema');
 
 // create product
 const createProduct = async (req, res) => {
@@ -56,13 +56,13 @@ const createProduct = async (req, res) => {
       return res
         .status(401)
         .json(
-          new succssResponse(401, "Image not found product create", true, null)
+          new succssResponse(401, 'Image not found product create', true, null)
         );
     }
     //emty array for store secure_url for database
     //Upload new image to cloudinary
     const cloudinaryImgUrl = [];
-    const uploaderCloudinary = async (imagePath) => {
+    const uploaderCloudinary = async imagePath => {
       //below image.path
       const { secure_url } = await fileCloudinaryUpload(imagePath);
       cloudinaryImgUrl.push(secure_url);
@@ -110,7 +110,7 @@ const createProduct = async (req, res) => {
       .json(
         new succssResponse(
           200,
-          "Product create successfull",
+          'Product create successfull',
           false,
           createProductDb
         )
@@ -129,7 +129,7 @@ const getAllProduct = async (req, res) => {
     //find all product
     const findAllProduct = await productModel
       .find({})
-      .populate(["category", 'subCategory']);
+      .populate(['category', 'subCategory']);
     if (!findAllProduct) {
       return res
         .status(401)
@@ -140,7 +140,7 @@ const getAllProduct = async (req, res) => {
       .json(
         new succssResponse(
           200,
-          "Data Retrive successfull",
+          'Data Retrive successfull',
           false,
           findAllProduct
         )
@@ -173,7 +173,7 @@ const getSingleProduct = async (req, res) => {
       .json(
         new succssResponse(
           200,
-          "Successfully retrive product",
+          'Successfully retrive product',
           false,
           searchSingleProduct
         )
@@ -197,7 +197,7 @@ const updateProductInfo = async (req, res) => {
     const { id } = req.params;
     const updateProductInfo = await productModel
       .findByIdAndUpdate({ _id: id }, { ...req.body }, { new: true })
-      .select("-image");
+      .select('-image');
     if (!updateProductInfo) {
       return res
         .status(401)
@@ -215,7 +215,7 @@ const updateProductInfo = async (req, res) => {
       .json(
         new succssResponse(
           200,
-          "Successfully update product information",
+          'Successfully update product information',
           false,
           updateProductInfo
         )
@@ -253,8 +253,8 @@ const updateProductImage = async (req, res) => {
 
     // delete old image from cloudinary
     for (let img of imageId) {
-      const oldImgSplit = img.split("/");
-      const oldImgUrl = oldImgSplit[oldImgSplit.length - 1].split(".")[0];
+      const oldImgSplit = img.split('/');
+      const oldImgUrl = oldImgSplit[oldImgSplit.length - 1].split('.')[0];
       await fileDeleteCloudinary(oldImgUrl);
     }
     // upload new img to cloudinary
@@ -299,7 +299,7 @@ const updateProductImage = async (req, res) => {
       .json(
         new succssResponse(
           200,
-          "Successfully update product image",
+          'Successfully update product image',
           false,
           check
         )
@@ -320,12 +320,9 @@ const updateProductImage = async (req, res) => {
 // delete product
 const deleteProduct = async (req, res) => {
   try {
-      const {category,subCategory} = req.body
-      console.log(category);
-      console.log(subCategory);
     const { id } = req.params;
-      console.log(id);
-    return
+    console.log(id);
+
     const findDB = await productModel.findById(id);
     if (!findDB) {
       return res
@@ -334,8 +331,8 @@ const deleteProduct = async (req, res) => {
     }
     // Image delete from cloudinary
     for (let img of findDB?.image) {
-      let imgPath = img.split("/");
-      let imgDeletePath = imgPath[imgPath.length - 1].split(".")[0];
+      let imgPath = img.split('/');
+      let imgDeletePath = imgPath[imgPath.length - 1].split('.')[0];
       await fileDeleteCloudinary(imgDeletePath);
     }
     // product database delete
@@ -345,7 +342,7 @@ const deleteProduct = async (req, res) => {
       .json(
         new succssResponse(
           200,
-          "Successfully deleted product",
+          'Successfully deleted product',
           false,
           deleteProductDB
         )
